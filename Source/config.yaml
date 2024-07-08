@@ -1,0 +1,12 @@
+
+process_name_1: "master"
+process_name_2: "firefox.exe"
+process_name_3: "Spotify.exe"
+process_name_4: "Discord.exe"
+process_name_5: "None"
+
+
+
+COMPORT : "COM7"
+
+BAUD_RATE : 9600

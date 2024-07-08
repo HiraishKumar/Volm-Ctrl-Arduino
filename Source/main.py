@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import ttk
-import math
 import serial
 import serial.tools.list_ports
 import threading
@@ -13,27 +12,21 @@ def find_port():
     # Get a list of all available serial ports.
     ports = serial.tools.list_ports.comports()
 
-    # print("The following serial ports were found:")
     for port in ports:
         if port.description.find("CH340") != -1 or port.description.find("Arduino") != -1:
-            # print(f"Device: {port.device}, Description: {port.description}")
             print(f"the port connected to {port.device}")
             return port.device
 
-process_name_2 = "firefox.exe" 
+# process_name_2 = "firefox.exe" 
+# process_name_3 = "Spotify.exe" 
+# process_name_4 = "Discord.exe"
+# audio_controller_2 = AudioController(process_name_2)
+# audio_controller_3 = AudioController(process_name_3)
+# audio_controller_4 = AudioController(process_name_4)
 
 
-process_name_3 = "Spotify.exe" 
-process_name_4 = "Discord.exe"
-audio_controller_2 = AudioController(process_name_2)
-audio_controller_3 = AudioController(process_name_3)
-audio_controller_4 = AudioController(process_name_4)
-# current_volume = audio_controller_1.process_volume()
-# print(f"firefox:{audio_controller_1.process_volume()} spotify: {audio_controller_2.process_volume()}")
-
-
-# process_names=["firefox.exe","spotify.exe"]
-# audio_controllers = [AudioController(i) for i in process_names]
+process_names = ["firefox.exe", "Spotify.exe", "Discord.exe"]
+audio_controllers = [AudioController(process_name) for process_name in process_names]
 
 def readSerial():
     print("Started Logging")
@@ -44,18 +37,13 @@ def readSerial():
             new_volume_1 = float(test[0]/100)
             set_volume_master(new_volume_1)            
                     
-            new_volume_2 = float(test[1]/100 )
-            audio_controller_2.set_volume(new_volume_2)
-            # print(f"New volume for {process_name_1} set to {new_volume_1}")
-            new_volume_3 = float(test[2]/100 )
-            audio_controller_3.set_volume(new_volume_3)
-            # print(f"New volume for {process_name_2} set to {new_volume_2}")
-            new_volume_4 = float(test[3]/100 )
-            audio_controller_4.set_volume(new_volume_4)            
-
+            for i in range(1, len(audio_controllers) + 1):
+                new_volume = float(test[i] / 100)
+                audio_controllers[i-1].set_volume(new_volume)          
 
             for num,item in enumerate(serials):
                 item.set(test[num])            
+                
             for num,item in enumerate(sliders):
                 item.set(value=test[num])
 
@@ -76,7 +64,7 @@ root.rowconfigure(1,weight=1)
 
 serials =[]
 sliders = []
-for i in range(5):
+for _ in range(5):
     serial_val = IntVar()
     serials.append(serial_val) 
 
