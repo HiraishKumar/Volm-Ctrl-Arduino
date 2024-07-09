@@ -17,14 +17,6 @@ def find_port():
             print(f"the port connected to {port.device}")
             return port.device
 
-# process_name_2 = "firefox.exe" 
-# process_name_3 = "Spotify.exe" 
-# process_name_4 = "Discord.exe"
-# audio_controller_2 = AudioController(process_name_2)
-# audio_controller_3 = AudioController(process_name_3)
-# audio_controller_4 = AudioController(process_name_4)
-
-
 process_names = ["firefox.exe", "Spotify.exe", "Discord.exe"]
 audio_controllers = [AudioController(process_name) for process_name in process_names]
 
