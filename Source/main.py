@@ -2,47 +2,28 @@ from tkinter import *
 from tkinter import ttk
 import serial
 import serial.tools.list_ports
-import threading
-from input import AudioController,set_volume_master
+from input import AudioController,Mix,find_port,startReading
+from yaml import load , Loader
 
 
+document = load(open("config.yaml","r"),Loader=Loader)
+DEFAULT_ITEMS = ['master', 'firefox.exe', 'Spotify.exe', 'Discord.exe']
+PROCESSES = [value for key,value in document["processes"].items() if value != None ] if "processes" in document and document["processes"] else DEFAULT_ITEMS
+BAUD_RATE = document["BAUD_RATE"] if "BAUD_RATE" in document and document["BAUD_RATE"] else 9600
 
-
-def find_port():
-    # Get a list of all available serial ports.
-    ports = serial.tools.list_ports.comports()
-
-    for port in ports:
-        if port.description.find("CH340") != -1 or port.description.find("Arduino") != -1:
-            print(f"the port connected to {port.device}")
-            return port.device
-
-process_names = ["firefox.exe", "Spotify.exe", "Discord.exe"]
-audio_controllers = [AudioController(process_name) for process_name in process_names]
 
 def readSerial():
     print("Started Logging")
     while True:
         if ser.in_waiting > 0:
             line = ser.readline().decode('utf-8').strip()
-            test = [int(i)//10 if 0 <= int(i) < 1000 else 100 for i in line.split("|")]
-            new_volume_1 = float(test[0]/100)
-            set_volume_master(new_volume_1)            
-                    
-            for i in range(1, len(audio_controllers) + 1):
-                new_volume = float(test[i] / 100)
-                audio_controllers[i-1].set_volume(new_volume)          
-
+            volumes = [int(i)//10 if 0 <= int(i) < 1000 else 100 for i in line.split("|")]
+            Mix(PROCESSES,volumes)    
             for num,item in enumerate(serials):
-                item.set(test[num])            
+                item.set(volumes[num])          
                 
             for num,item in enumerate(sliders):
-                item.set(value=test[num])
-
-def startReading():
-    thread =threading.Thread(target=readSerial)
-    thread.daemon=True
-    thread.start()
+                item.set(value=volumes[num])
                
 root = Tk()
 root.title("Serial Reader")
@@ -75,9 +56,9 @@ for i in range(1,6):
 for child in mainframe.winfo_children():
     child.grid_configure(padx=20)
 
-ser = serial.Serial(find_port(),9600)
+ser = serial.Serial(find_port(),BAUD_RATE)
 
-startReading()
+startReading(readSerial)
 
 root.mainloop()
 

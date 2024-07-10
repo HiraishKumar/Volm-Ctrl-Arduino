@@ -1,12 +1,14 @@
 
-process_name_1: "master"
-process_name_2: "firefox.exe"
-process_name_3: "Spotify.exe"
-process_name_4: "Discord.exe"
-process_name_5: "None"
+processes:
+    process_name_1: "master"
+    process_name_2: "firefox.exe"
+    process_name_3: "Spotify.exe"
+    process_name_4: "Discord.exe"
+    process_name_5: 
 
-
+#Change process names according to which process you would like to control else leave it blank as shown
 
 COMPORT : "COM7"
+#if COMPORT detection dosent Work you can manually configure the COMPORT to start reading at
 
-BAUD_RATE : 9600
+BAUD_RATE : 

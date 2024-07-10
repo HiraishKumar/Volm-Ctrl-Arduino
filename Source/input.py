@@ -1,17 +1,37 @@
 from ctypes import cast, POINTER
+import serial
 from comtypes import CLSCTX_ALL     
 from pycaw.pycaw import AudioUtilities ,IAudioEndpointVolume
-
+import threading
+from yaml import load , Loader
 import math
+document = load(open("config.yaml","r"),Loader=Loader)
+DEFAULT_ITEMS = ['master', 'firefox.exe', 'Spotify.exe', 'Discord.exe']
+PROCESSES = [value for key,value in document["processes"].items() if value != None ] if "processes" in document and document["processes"] else DEFAULT_ITEMS
+BAUD_RATE = document["BAUD_RATE"] if "BAUD_RATE" in document and document["BAUD_RATE"] else 9600
+COMPORT = document["COMPORT"] if "COMPORT" in document and document["COMPORT"] else None
 
-def set_volume_master(level):
-    try:
-        devices = AudioUtilities.GetSpeakers()
-        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        volume = cast(interface, POINTER(IAudioEndpointVolume))
-        volume.SetMasterVolumeLevelScalar(math.log10(level * 9 + 1) / 1, None)
-    except:
-        None
+def Mix(PROCESSES:list[str],volumes:list[int]):
+    PROCESSES = [AudioController(process) for process in PROCESSES ]
+    linkers =list(zip(PROCESSES,volumes))
+    for session,volume in linkers:
+        actual_volume = float(volume / 100)
+        session.set_volume(actual_volume)
+        
+def find_port(COMPORT):
+    if COMPORT:
+        return COMPORT 
+    # Get a list of all available serial ports.
+    ports = serial.tools.list_ports.comports()
+    for port in ports:
+        if port.description.find("CH340") != -1 or port.description.find("Arduino") != -1:
+            print(f"the port connected to {port.device}")
+            return port.device
+        
+def startReading(function:function):
+    thread =threading.Thread(target=function)
+    thread.daemon=True
+    thread.start()
 
 class AudioController:
     def __init__(self, process_name):
@@ -26,23 +46,52 @@ class AudioController:
             if session.Process and session.Process.name() == self.process_name:
                 print("Volume:", interface.GetMasterVolume())  # debug
                 return interface.GetMasterVolume()
-    
+            
+    def set_volume_master(level):
+        try:
+            devices = AudioUtilities.GetSpeakers()
+            interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+            volume = cast(interface, POINTER(IAudioEndpointVolume))
+            volume.SetMasterVolumeLevelScalar(math.log10(level * 9 + 1) / 1, None)
+        except:
+            None
+
     def set_volume(self, volume_linear):
         sessions = AudioUtilities.GetAllSessions()
         volume_log = self.linear_to_logarithmic(volume_linear)
-        
-        if self.interface is None:
-            for session in sessions:
-                interface = session.SimpleAudioVolume
-                if session.Process and session.Process.name() == self.process_name:
-                    self.interface = session
+        if self.process_name != "master":
+            if self.interface is None:
+                try:
+                    for session in sessions:
+                        interface = session.SimpleAudioVolume
+                        if session.Process and session.Process.name() == self.process_name:
+                            self.interface = session
+                            interface.SetMasterVolume(volume_log, None)
+                            print("Volume set to", volume_log)
+                except:
+                    None
+            else:
+                try:
+                    interface = self.interface.SimpleAudioVolume
                     interface.SetMasterVolume(volume_log, None)
-                    print("Volume set to", volume_log)
+                    print("Volume set to", volume_log)   
+                except:
+                    None
         else:
-            interface = self.interface.SimpleAudioVolume
-            interface.SetMasterVolume(volume_log, None)
-            print("Volume set to", volume_log)       
-
+            if self.interface is None:
+                try:
+                    devices = AudioUtilities.GetSpeakers()
+                    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+                    volume = cast(interface, POINTER(IAudioEndpointVolume))
+                    self.interface = volume
+                    volume.SetMasterVolumeLevelScalar(volume_log, None)
+                except:
+                    None
+            else:
+                try:
+                    self.interface.SetMasterVolumeLevelScalar(volume_log, None)
+                except:
+                    None
 
     def linear_to_logarithmic(self, volume_linear):
         # Convert linear volume to logarithmic scale
