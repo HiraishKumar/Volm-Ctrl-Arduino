@@ -1,4 +1,5 @@
 
+#Change process names according to which process you would like to control else leave it blank as shown
 processes:
     process_name_1: "master"
     process_name_2: "firefox.exe"
@@ -6,9 +7,8 @@ processes:
     process_name_4: "Discord.exe"
     process_name_5: 
 
-#Change process names according to which process you would like to control else leave it blank as shown
 
-COMPORT : "COM7"
 #if COMPORT detection dosent Work you can manually configure the COMPORT to start reading at
+COMPORT : "COM7"
 
-BAUD_RATE : 
+BAUD_RATE : 9600
