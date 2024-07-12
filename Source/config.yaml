@@ -7,7 +7,6 @@ processes:
     process_name_4: "Discord.exe"
     process_name_5: 
 
-
 #if COMPORT detection dosent Work you can manually configure the COMPORT to start reading at
 COMPORT : "COM7"
 
