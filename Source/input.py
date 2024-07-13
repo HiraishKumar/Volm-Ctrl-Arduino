@@ -25,7 +25,7 @@ def find_port(COMPORT):
     ports = serial.tools.list_ports.comports()
     for port in ports:
         if port.description.find("CH340") != -1 or port.description.find("Arduino") != -1:
-            print(f"the port connected to {port.device}")
+            print(f"the port connected to {port.device}") #debug
             return port.device
         
 def startReading(function:function):
