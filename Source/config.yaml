@@ -7,7 +7,14 @@ processes:
     process_name_4: "Discord.exe"
     process_name_5: 
 
+
+SLIDERS : 5     # Number of sliders in the GUI
+                # By default its the same as the number of Processes 
+                # You can specify a interger for a different number of slider 
+
 #if COMPORT detection dosent Work you can manually configure the COMPORT to start reading at
-COMPORT : "COM7"
+COMPORT :  #"COM7"  # This is a dummy value 
+                    # you can try to input a port manualy
+
 
 BAUD_RATE : 9600

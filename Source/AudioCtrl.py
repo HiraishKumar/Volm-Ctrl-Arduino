@@ -1,37 +1,7 @@
 from ctypes import cast, POINTER
-import serial
 from comtypes import CLSCTX_ALL     
-from pycaw.pycaw import AudioUtilities ,IAudioEndpointVolume
-import threading
-from yaml import load , Loader
+from pycaw.pycaw import AudioUtilities ,IAudioEndpointVolume 
 import math
-document = load(open("config.yaml","r"),Loader=Loader)
-DEFAULT_ITEMS = ['master', 'firefox.exe', 'Spotify.exe', 'Discord.exe']
-PROCESSES = [value for key,value in document["processes"].items() if value != None ] if "processes" in document and document["processes"] else DEFAULT_ITEMS
-BAUD_RATE = document["BAUD_RATE"] if "BAUD_RATE" in document and document["BAUD_RATE"] else 9600
-COMPORT = document["COMPORT"] if "COMPORT" in document and document["COMPORT"] else None
-
-def Mix(PROCESSES:list[str],volumes:list[int]):
-    PROCESSES = [AudioController(process) for process in PROCESSES ]
-    linkers =list(zip(PROCESSES,volumes))
-    for session,volume in linkers:
-        actual_volume = float(volume / 100)
-        session.set_volume(actual_volume)
-        
-def find_port(COMPORT):
-    if COMPORT:
-        return COMPORT 
-    # Get a list of all available serial ports.
-    ports = serial.tools.list_ports.comports()
-    for port in ports:
-        if port.description.find("CH340") != -1 or port.description.find("Arduino") != -1:
-            print(f"the port connected to {port.device}") #debug
-            return port.device
-        
-def startReading(function:function):
-    thread =threading.Thread(target=function)
-    thread.daemon=True
-    thread.start()
 
 class AudioController:
     def __init__(self, process_name):
@@ -100,7 +70,8 @@ class AudioController:
         # Convert linear scale (0.0 to 1.0) to logarithmic scale
         # We use a log base 10 here, but other bases could be used
         return math.log10(volume_linear * 9 + 1) / 1  # maps 0.0-1.0 to 0.0-1.0 logarithmically
-
+    
+        
 if __name__ == "__main__":
     process_name = "firefox.exe"  # Replace with the name of the process you want to control
     audio_controller = AudioController(process_name)
