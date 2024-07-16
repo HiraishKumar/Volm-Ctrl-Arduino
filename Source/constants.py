@@ -1,6 +1,6 @@
 from yaml import load , Loader
 from AudioCtrl import AudioController
-document = load(open("config.yaml","r"),Loader=Loader)                                          #Load in the Config file as document
+document = load(open("config.yaml","r"),Loader=Loader)                                          
 
 
 DEFAULT_ITEMS = ['master', 'firefox.exe', 'Spotify.exe', 'Discord.exe']
